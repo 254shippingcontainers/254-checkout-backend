@@ -7,6 +7,25 @@
 // "checkoutToken" that your webpage uses to open the payment
 // modal. Your Helcim API token lives here (server-side) and is
 // NEVER exposed to the browser.
+//
+// DEPLOY THIS ON VERCEL (free):
+//   1. Create a free account at vercel.com
+//   2. Create a new project, upload this "helcim-backend" folder
+//      (this file must live at: api/create-checkout.js)
+//   3. In the Vercel project's Settings -> Environment Variables,
+//      add: HELCIM_API_TOKEN = <your real Helcim API token>
+//   4. Deploy. Vercel gives you a URL like:
+//        https://your-project-name.vercel.app
+//   5. Your endpoint is:
+//        https://your-project-name.vercel.app/api/create-checkout
+//      Paste that into CONFIG.backendUrl in shipping-calculator.html
+//
+// ALSO REQUIRED IN HELCIM:
+//   In your Helcim dashboard, when generating the API token,
+//   check the box for "HelcimPay.js Checkout" use, and add your
+//   live website domain (the GoDaddy site URL) plus your Vercel
+//   URL to the whitelist of allowed checkout domains.
+// ============================================================
 
 export default async function handler(req, res) {
   // Allow your website to call this endpoint.
@@ -25,12 +44,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, description } = req.body || {};
+    const { amount, description, paymentType } = req.body || {};
 
     const numericAmount = Number(amount);
     if (!numericAmount || numericAmount <= 0) {
       return res.status(400).json({ error: 'Invalid amount' });
     }
+
+    // Only allow the two payment types this integration actually uses.
+    // 'purchase' charges the card immediately.
+    // 'preauth' holds the funds without charging — used for AG/Tax
+    // Exempt orders, so the charge can be manually captured in the
+    // Helcim dashboard once the exemption certificate is verified.
+    const safePaymentType = (paymentType === 'preauth') ? 'preauth' : 'purchase';
 
     const helcimResponse = await fetch('https://api.helcim.com/v2/helcim-pay/initialize', {
       method: 'POST',
@@ -39,10 +65,12 @@ export default async function handler(req, res) {
         'api-token': process.env.HELCIM_API_TOKEN
       },
       body: JSON.stringify({
-        paymentType: 'purchase',
+        paymentType: safePaymentType,
         amount: numericAmount,
         currency: 'USD',
         confirmationScreen: true
+        // "invoiceRequest" could be added here later if you want
+        // Helcim to auto-generate an itemized invoice per order.
       })
     });
 
