@@ -1,6 +1,10 @@
 {
   "name": "254-shipping-containers-checkout-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Serverless backend that creates Helcim checkout sessions for the 254 Shipping Containers delivery calculator."
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "description": "Server-authoritative delivery quotes and Helcim checkout for 254 Shipping Containers."
 }
