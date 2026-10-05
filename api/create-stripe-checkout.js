@@ -21,7 +21,7 @@ export function makeHandler(getStripe = stripeClient) {
       return res.status(200).json({ checkoutUrl: session.url, orderReference, quote: publicQuote(quote) });
     } catch (error) {
       if (error.name === 'QuoteError') return sendQuoteError(res, error);
-      console.error('Stripe checkout failed', { type: error.type || error.name, code: error.code });
+      console.error('Stripe checkout failed', { type: error.type || error.name, code: error.code, param: error.param });
       return res.status(502).json({ error: 'We could not start secure checkout. Please try again or call Mason.', code: 'CHECKOUT_INITIALIZATION_FAILED' });
     }
   };
