@@ -6,5 +6,8 @@
   "scripts": {
     "test": "node --test"
   },
-  "description": "Server-authoritative delivery quotes and Helcim checkout for 254 Shipping Containers."
+  "description": "Server-authoritative delivery quotes and Helcim checkout for 254 Shipping Containers.",
+  "dependencies": {
+    "stripe": "23.0.0"
+  }
 }

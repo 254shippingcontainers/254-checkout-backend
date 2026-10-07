@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base href="https://www.254shippingcontainers.com/">
+<meta name="robots" content="noindex">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Quote Calculator — 254 Shipping Containers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+
+  /* ============================================================
+     254 SHIPPING CONTAINERS — DELIVERY QUOTE CALCULATOR
+     Styled after conexwest.com's product/delivery-options flow.
+     ------------------------------------------------------------
+     IMPORTANT: Checkout pricing is controlled by the Vercel backend.
+     The CONFIG prices below are display fallbacks only and must be kept
+     in sync with the backend's lib/pricing.js file.
+     ============================================================ */
+
+  :root{
+    --ink:        #101114;
+    --grey-700:   #4b4f57;
+    --grey-500:   #74787f;
+    --grey-200:   #e4e5e8;
+    --grey-100:   #f4f4f5;
+    --line:       #dcdde1;
+    --blue-link:  #1a56db;
+    --green-ok:   #1a8a4a;
+    --brand-blue:      #1a4d8f;
+    --brand-blue-dark: #123a6d;
+    --brand-red:       #c8371f;
+    --brand-red-dark:  #a12c18;
+    --accent:     var(--brand-red);
+    --accent-ink: #ffffff;
+    --selected-bg:#e9f0fa;
+    --selected-border: var(--brand-blue);
+    --red-tag:    #c1272d;
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body{
+    margin:0;
+    background:var(--grey-100);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    min-height:100vh;
+    padding:24px 12px 100px;
+  }
+
+  .card{
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    border:2.5px solid var(--ink);
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  .brandbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 18px;
+    background:var(--brand-blue);
+    background-image:linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-dark) 100%);
+    color:#fff;
+    border-bottom:4px solid var(--brand-red);
+  }
+  .brandbar-left{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brandbar-logo{
+    height:38px;
+    width:auto;
+    display:block;
+  }
+  .brandbar .name{
+    font-weight:800;
+    font-size:14px;
+    letter-spacing:0.01em;
+    color:#fff;
+  }
+  .brandbar .name span{ color:#fff; opacity:0.92; }
+  .brandbar .tag{
+    font-family:'Roboto Mono',monospace;
+    font-size:10.5px;
+    color:#cfe0f5;
+    text-align:right;
+    line-height:1.35;
+  }
+  .brandbar .tag strong{ display:block; color:#fff; }
+  .brandbar .tag a{ color:inherit; text-decoration:none; }
+  .brandbar .tag a:hover{ text-decoration:underline; }
+
+  .body{ padding:20px; }
+
+  .meta-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    color:var(--grey-500);
+    margin-bottom:6px;
+  }
+  .in-stock{
+    color:var(--green-ok);
+    font-weight:700;
+  }
+
+  .product-title{
+    font-size:15px;
+    font-weight:700;
+    margin:0 0 14px;
+  }
+
+  .price-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .price-row .big-price{
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+  }
+
+  .qty-stepper{
+    display:flex;
+    align-items:center;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .qty-stepper button{
+    width:36px;
+    height:36px;
+    border:none;
+    background:#fff;
+    font-size:18px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .qty-stepper button:hover{ background:var(--grey-100); }
+  .qty-stepper .qty-val{
+    width:34px;
+    text-align:center;
+    font-weight:700;
+    font-size:15px;
+    font-family:'Roboto Mono',monospace;
+  }
+
+  .size-select{
+    margin-bottom:18px;
+  }
+  .size-select label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--grey-500);
+    margin-bottom:8px;
+  }
+
+  .grade-dropdown{
+    width:100%;
+    padding:10px 12px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink);
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2374787f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    padding-right:32px;
+  }
+  .grade-dropdown:focus{
+    outline:none;
+    border-color:var(--selected-border);
+  }
+
+  .delivery-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .delivery-header .dh-left{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:700;
+    font-size:14.5px;
+  }
+  .change-link{
+    color:var(--blue-link);
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+    background:none;
+    border:none;
+    padding:0;
+  }
+  .change-link:hover{ text-decoration:underline; }
+
+  .zip-editor{
+    display:none;
+    margin-bottom:14px;
+    gap:8px;
+  }
+  .zip-editor.open{ display:flex; }
+  .zip-editor input{
+    flex:1;
+    padding:10px 12px;
+    font-family:'Roboto Mono',monospace;
+    font-size:15px;
+    font-weight:700;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    outline:none;
+  }
+  .zip-editor input:focus{ border-color:var(--selected-border); }
+  .zip-editor button{
+    padding:0 16px;
+    border:1.5px solid var(--ink);
+    background:var(--ink);
+    color:#fff;
+    border-radius:8px;
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+  }
+
+  .error-msg{
+    display:none;
+    margin-bottom:14px;
+    padding:9px 12px;
+    background:#fdeceb;
+    border:1.5px solid var(--red-tag);
+    border-radius:7px;
+    color:var(--red-tag);
+    font-size:12.5px;
+    font-weight:600;
+  }
+
+  .delivery-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:6px;
+  }
+
+  .delivery-opt{
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    padding:13px 14px;
+    cursor:pointer;
+  }
+  .delivery-opt.selected{
+    border-color:var(--selected-border);
+    background:var(--selected-bg);
+  }
+  .delivery-opt .do-top{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .radio-dot{
+    margin-top:2px;
+    width:18px;
+    height:18px;
+    min-width:18px;
+    border-radius:50%;
+    border:2px solid var(--grey-500);
+    position:relative;
+    flex-shrink:0;
+  }
+  .delivery-opt.selected .radio-dot{ border-color:var(--selected-border); }
+  .delivery-opt.selected .radio-dot::after{
+    content:'';
+    position:absolute;
+    top:3px; left:3px;
+    width:8px; height:8px;
+    border-radius:50%;
+    background:var(--selected-border);
+  }
+  .do-title-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    flex:1;
+  }
+  .do-title{
+    font-weight:700;
+    font-size:14.5px;
+  }
+  .do-badge{
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--green-ok);
+    background:#e6f5ec;
+    padding:2px 7px;
+    border-radius:20px;
+  }
+  .do-price{
+    font-weight:800;
+    font-size:14.5px;
+    white-space:nowrap;
+  }
+  .do-desc{
+    margin:5px 0 0 28px;
+    font-size:12.5px;
+    color:var(--grey-500);
+    line-height:1.4;
+  }
+
+  .distance-note{
+    font-size:12px;
+    color:var(--grey-500);
+    text-align:center;
+    margin-top:12px;
+    font-family:'Roboto Mono',monospace;
+  }
+
+  .container-preview{
+    display:block;
+    margin-bottom:18px;
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    overflow:hidden;
+    background:var(--grey-100);
+  }
+  .container-preview .cp-img{
+    display:none;
+  }
+  .container-preview img.cp-img{
+    width:100%;
+    height:auto;
+  }
+  .container-preview .cp-show{
+    display:block;
+  }
+  .cp-carousel{
+    position:relative;
+    overflow:hidden;
+  }
+  .cp-carousel .cp-track{
+    display:flex;
+    align-items:flex-start;
+    transition:transform 0.25s ease;
+  }
+  .cp-carousel .cp-slide{
+    flex:0 0 100%;
+    width:100%;
+    height:auto;
+    display:block;
+  }
+  .cp-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(0,0,0,0.45);
+    color:#fff;
+    border:none;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    font-size:18px;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .cp-nav.cp-prev{ left:8px; }
+  .cp-nav.cp-next{ right:8px; }
+  .cp-dots{
+    display:flex;
+    justify-content:center;
+    gap:6px;
+    padding:10px 0 4px;
+    background:#fff;
+  }
+  .cp-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--grey-200);
+    border:none;
+    padding:0;
+    cursor:pointer;
+  }
+  .cp-dot.active{
+    background:var(--brand-blue);
+  }
+  .cp-example-note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--grey-500);
+    padding:0 12px 10px;
+    background:#fff;
+  }
+  .container-preview-caption{
+    padding:8px 12px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--grey-700);
+    text-align:center;
+    background:#fff;
+  }
+
+  .delivery-available{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--green-ok);
+    margin:2px 0 14px;
+  }
+
+  .tax-exempt-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:18px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--grey-700);
+    cursor:pointer;
+  }
+  .exempt-note{
+    margin:-10px 0 18px;
+    padding:12px 14px;
+    background:#fff8e6;
+    border:1px solid #f0d999;
+    border-radius:8px;
+    font-size:12.5px;
+    line-height:1.5;
+    color:var(--grey-700);
+  }
+  .exempt-note a{
+    color:var(--brand-blue);
+    font-weight:700;
+    text-decoration:none;
+  }
+  .tax-exempt-row input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    accent-color:var(--brand-blue);
+    cursor:pointer;
+  }
+
+  .tax-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--grey-700);
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed var(--line);
+  }
+  .tax-line.exempt{
+    color:var(--green-ok);
+    font-weight:600;
+    justify-content:center;
+  }
+
+  .sticky-bar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    background:#fff;
+    border-top:1px solid var(--line);
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    box-shadow:0 -4px 14px rgba(0,0,0,0.06);
+  }
+  .sticky-inner{
+    width:100%;
+    max-width:480px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+  }
+  .sticky-total-label{
+    font-size:11px;
+    color:var(--grey-500);
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  .sticky-total-val{
+    font-size:20px;
+    font-weight:800;
+  }
+  .cta-btn{
+    background:var(--brand-red);
+    background-image:linear-gradient(180deg, var(--brand-red) 0%, var(--brand-red-dark) 100%);
+    color:#fff;
+    border:2px solid var(--ink);
+    border-radius:9px;
+    padding:13px 22px;
+    font-weight:800;
+    font-size:14.5px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+  }
+  .cta-btn:hover{ filter:brightness(0.96); }
+  .cta-btn:disabled{ opacity:0.6; cursor:wait; }
+
+  @media (max-width:400px){
+    .do-price{ font-size:13.5px; }
+  }
+</style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WB0VYZ09TD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WB0VYZ09TD');
+  </script>
+</head>
+<body>
+<div style="padding:12px;text-align:center;background:#fff0bc;color:#172943;font-weight:bold">STRIPE SANDBOX PREVIEW · Use test cards only · No real charges</div>
+
+<div class="card">
+  <div class="brandbar">
+    <div class="brandbar-left">
+      <img src="https://254-checkout-backend.vercel.app/images/logo.jpg" alt="254 Shipping Containers logo" class="brandbar-logo">
+      <div class="name">254 <span>SHIPPING CONTAINERS</span></div>
+    </div>
+    <div class="tag"><strong>Call or text Mason</strong><a href="tel:+12545956950">(254) 595-6950</a> · <a href="sms:+12545956950">Text</a></div>
+  </div>
+
+  <div class="body">
+    <div class="meta-row">
+      <span id="conditionOut">New · Ground Level Delivery</span>
+      <span class="in-stock">● In Stock</span>
+    </div>
+    <p class="product-title">Get a delivered price to your ZIP code</p>
+    <div class="delivery-available">✓ Available Delivery — <span id="deliveryDateOut">calculating...</span></div>
+
+    <div class="price-row">
+      <div class="big-price" id="basePriceOut">$2,550</div>
+      <div class="qty-stepper">
+        <button type="button" onclick="changeQty(-1)">−</button>
+        <div class="qty-val" id="qtyVal">1</div>
+        <button type="button" onclick="changeQty(1)">+</button>
+      </div>
+    </div>
+
+    <div class="size-select">
+      <label>Container Size</label>
+      <select id="sizeSelect" class="grade-dropdown" onchange="selectSize(this.value)">
+        <option value="20">20' Standard</option>
+        <option value="40hc" selected>40' High Cube</option>
+      </select>
+    </div>
+
+    <div class="size-select">
+      <label>Grade</label>
+      <select id="gradeSelect" class="grade-dropdown" onchange="selectGrade(this.value)">
+        <option value="1trip">1 Trip</option>
+        <option value="cw" selected>Cargo Worthy</option>
+      </select>
+    </div>
+
+    <div class="size-select" id="colorSelectWrap" style="display:none;">
+      <label>Color</label>
+      <select id="colorSelect" class="grade-dropdown" onchange="selectColor(this.value)">
+        <option value="beige">Beige</option>
+        <option value="lightgray" id="lightGrayOption">Light Gray</option>
+        <option value="darkgray" id="darkGrayOption">Dark Gray</option>
+      </select>
+    </div>
+
+    <div class="container-preview" id="containerPreview">
+      <div class="cp-img" data-key="20-cw">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-cw-1.jpg" alt="20' Standard Cargo Worthy example unit 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-cw-2.jpg" alt="20' Standard Cargo Worthy example unit 2">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-cw-3.jpg" alt="20' Standard Cargo Worthy example unit 3">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-cw-4.jpg" alt="20' Standard Cargo Worthy example unit 4">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-cw-5.jpg" alt="20' Standard Cargo Worthy example unit 5">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-cw-6.jpg" alt="20' Standard Cargo Worthy interior example">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Photos show example units — actual color, wear, and rust patterns will vary</div>
+      </div>
+      <div class="cp-img" data-key="20-1trip-beige">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-beige-1.jpg" alt="20' Standard One Trip container, beige, example 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-beige-2.jpg" alt="20' Standard One Trip container, beige, example 2">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-beige-3.jpg" alt="20' Standard One Trip container, beige, example 3">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-beige-4.jpg" alt="20' Standard One Trip container, beige, example 4">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-beige-5.jpg" alt="20' Standard One Trip container, beige, example 5">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-beige-6.jpg" alt="20' Standard One Trip container, beige, interior example 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-beige-7.jpg" alt="20' Standard One Trip container, beige, interior example 2">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Photos show example units — actual unit may vary slightly</div>
+      </div>
+      <div class="cp-img" data-key="20-1trip-lightgray">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-lightgray-1.jpg" alt="20' Standard One Trip container, light gray, example 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-lightgray-2.jpg" alt="20' Standard One Trip container, light gray, example 2">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-lightgray-3.jpg" alt="20' Standard One Trip container, light gray, example 3">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-lightgray-4.jpg" alt="20' Standard One Trip container, light gray, example 4">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-lightgray-5.jpg" alt="20' Standard One Trip container, light gray, interior example">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Photos show example units — actual unit may vary slightly</div>
+      </div>
+      <div class="cp-img" data-key="20-1trip-darkgray">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-darkgray-1.jpg" alt="20' Standard One Trip container, dark gray, example 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-darkgray-2.jpg" alt="20' Standard One Trip container, dark gray, example 2">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-darkgray-3.jpg" alt="20' Standard One Trip container, dark gray, example 3">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-darkgray-4.jpg" alt="20' Standard One Trip container, dark gray, example 4">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-darkgray-5.jpg" alt="20' Standard One Trip container, dark gray, example 5">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-darkgray-6.jpg" alt="20' Standard One Trip container, dark gray, interior example 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-1trip-darkgray-7.jpg" alt="20' Standard One Trip container, dark gray, interior example 2">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Photos show example units — actual unit may vary slightly</div>
+      </div>
+      <div class="cp-img" data-key="40hc-cw">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-cw-2.jpg" alt="40' High Cube Cargo Worthy example unit 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-cw-1.jpg" alt="40' High Cube Cargo Worthy example unit 2">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-cw-3.jpg" alt="40' High Cube Cargo Worthy example unit 3">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-cw-4.jpg" alt="40' High Cube Cargo Worthy example unit 4">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-cw-5.jpg" alt="40' High Cube Cargo Worthy example unit 5">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-cw-7.jpg" alt="40' High Cube Cargo Worthy example unit 6">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-cw-6.jpg" alt="40' High Cube Cargo Worthy interior example">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Photos show example units — actual color, wear, and rust patterns will vary</div>
+      </div>
+      <div class="cp-img" data-key="40hc-1trip-beige">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-beige-1.jpg" alt="40' High Cube One Trip container, beige, example 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-beige-2.jpg" alt="40' High Cube One Trip container, beige, example 2">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-beige-3.jpg" alt="40' High Cube One Trip container, beige, example 3">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-beige-4.jpg" alt="40' High Cube One Trip container, beige, example 4">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-beige-5.jpg" alt="40' High Cube One Trip container, beige, example 5">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-beige-6.jpg" alt="40' High Cube One Trip container, beige, interior example">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Photos show example units — actual unit may vary slightly</div>
+      </div>
+      <div class="cp-img" data-key="40hc-1trip-darkgray">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-darkgray-1.jpg" alt="40' High Cube One Trip container, dark gray, example 1">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-darkgray-2.jpg" alt="40' High Cube One Trip container, dark gray, example 2">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-darkgray-3.jpg" alt="40' High Cube One Trip container, dark gray, example 3">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-darkgray-4.jpg" alt="40' High Cube One Trip container, dark gray, example 4">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-40hc-1trip-darkgray-5.jpg" alt="40' High Cube One Trip container, dark gray, example 5">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Photos show example units — actual unit may vary slightly</div>
+      </div>
+      <div class="container-preview-caption" id="containerPreviewCaption"></div>
+    </div>
+
+    <label class="tax-exempt-row">
+      <input type="checkbox" id="taxExemptCheck" onchange="toggleTaxExempt(this.checked)">
+      <span>AG / Tax Exempt</span>
+    </label>
+
+    <div class="exempt-note" id="exemptNote" style="display:none;">
+      Your card will be <strong>authorized only</strong> — not charged — until we
+      receive and verify your exemption certificate. Please email your
+      certificate to
+      <a href="mailto:mason@254shippingcontainers.com?subject=AG%2FTax%20Exemption%20Certificate">mason@254shippingcontainers.com</a>
+      referencing your name and order. Once approved, we'll complete the charge;
+      certificates should be sent within a few days of ordering.
+    </div>
+
+    <div class="delivery-header">
+      <div class="dh-left">🚚 Delivery options to <span id="zipLabel">76457</span></div>
+      <button type="button" class="change-link" onclick="toggleZipEditor()">Change</button>
+    </div>
+
+    <div class="zip-editor" id="zipEditor">
+      <input type="text" id="zip" inputmode="numeric" maxlength="5" placeholder="Enter ZIP code" autocomplete="postal-code">
+      <button type="button" onclick="applyZip()">Apply</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="delivery-list" id="deliveryList"></div>
+
+    <div class="tax-line" id="taxLine"></div>
+    <div class="tax-line" id="cardFeeLine"></div>
+    <div class="distance-note" id="distanceNote"></div>
+  </div>
+</div>
+
+<div class="sticky-bar">
+  <div class="sticky-inner">
+    <div>
+      <div class="sticky-total-label">Estimated Total</div>
+      <div class="sticky-total-val" id="totalOut">Calculating…</div>
+    </div>
+    <button class="cta-btn" id="ctaBtn" onclick="buyNow()">Buy Now</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — edit these values to update pricing. No other code
+   in this file needs to change for normal price updates.
+   ============================================================ */
+const CONFIG = {
+
+  originZip: "76457", // Hico, TX — 20979 Hwy 281, Hico, TX 76457
+  originAddress: "20979 Hwy 281, Hico, TX 76457",
+  originCity: "Hico, TX",
+
+  // Display-only product pricing. The Vercel backend independently
+  // recalculates every amount before creating a Stripe checkout.
+  containerBasePrice: {
+    "20":   { cw: 2200, "1trip": 3000 },
+    "40hc": { cw: 2550, "1trip": 4250 }
+  },
+
+  // Delivery pricing: free within the free radius, then a flat
+  // per-mile rate for every mile beyond that.
+  freeRadiusMiles: 30,
+  ratePerMileBeyondFree: 4.50,
+
+  deliveryMethods: [
+    {
+      key: "tilt",
+      title: "Tilt-Bed Delivery",
+      badge: "",
+      desc: "Driver places the container on the ground. No unloading equipment needed. Free within 30 route miles of our Hico yard. Delivery pricing is confirmed per trip; two 20-foot containers may qualify for one delivery charge.",
+      multiplier: 1.0
+    }
+  ],
+
+  maxAutoQuoteMiles: 400,
+  contactPhone: "(254) 595-6950",
+
+  // Sales tax rate applied unless the customer checks "AG / Tax Exempt"
+  salesTaxRate: 0.0675,
+
+  // Card processing surcharge, applied to every order
+  cardFeeRate: 0.035,
+
+  // The URL of your deployed Stripe checkout backend (see the
+  // helcim-backend folder / README for how to deploy this).
+  // Must end in /api/create-checkout-v2
+  backendUrl: location.origin + "/api/create-stripe-checkout",
+
+  // Where customers land after a successful payment.
+  // UPDATE THIS once the Thank You page is live on GoDaddy —
+  // paste in the exact URL of that page.
+  thankYouUrl: "https://254shippingcontainers.com/thank-you"
+};
+/* ============================================================
+   END CONFIG
+   ============================================================ */
+
+let state = {
+  size: "40hc",
+  grade: "cw",
+  color: "beige",
+  qty: 1,
+  zip: CONFIG.originZip,
+  deliveryMethod: "tilt",
+  taxExempt: false,
+  quote: null,
+  quoteLoading: false,
+  quoteRequestId: 0
+};
+
+function fmtMoney(n, digits = 2){
+  return Number(n).toLocaleString('en-US', {
+    style:'currency',
+    currency:'USD',
+    minimumFractionDigits:digits,
+    maximumFractionDigits:digits
+  });
+}
+
+function getQuoteUrl(){
+  return location.origin + '/api/quote';
+}
+
+function checkoutPayload(){
+  return {
+    size: state.size,
+    grade: state.grade,
+    color: state.color,
+    qty: state.qty,
+    zip: state.zip,
+    taxExempt: state.taxExempt
+  };
+}
+
+function displayUnitPrice(){
+  let price = CONFIG.containerBasePrice[state.size][state.grade];
+  if(state.grade === '1trip' && (state.color === 'darkgray' || state.color === 'lightgray')){
+    price += 300;
+  }
+  return price;
+}
+
+async function refreshQuote(){
+  clearError();
+  const requestId = ++state.quoteRequestId;
+  state.quote = null;
+  state.quoteLoading = true;
+  render();
+
+  try{
+    const res = await fetch(getQuoteUrl(), {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify(checkoutPayload())
+    });
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok || !data.quote) throw new Error(data.error || 'We could not calculate this delivery quote.');
+    if(requestId !== state.quoteRequestId) return;
+    state.quote = data.quote;
+  }catch(error){
+    if(requestId !== state.quoteRequestId) return;
+    state.quote = null;
+    showError(error.message || `We couldn't calculate this quote. Please call ${CONFIG.contactPhone}.`);
+  }finally{
+    if(requestId === state.quoteRequestId){
+      state.quoteLoading = false;
+      render();
+    }
+  }
+}
+
+function showError(msg){
+  const err = document.getElementById('errorMsg');
+  err.textContent = msg;
+  err.style.display = 'block';
+}
+function clearError(){
+  document.getElementById('errorMsg').style.display = 'none';
+}
+
+function selectSize(sizeKey){
+  state.size = sizeKey;
+  state.color = "beige";
+  document.getElementById('colorSelect').value = "beige";
+  render();
+  refreshQuote();
+}
+
+function selectGrade(gradeKey){
+  state.grade = gradeKey;
+  state.color = "beige";
+  document.getElementById('colorSelect').value = "beige";
+  render();
+  refreshQuote();
+}
+
+function selectColor(colorKey){
+  state.color = colorKey;
+  render();
+  refreshQuote();
+}
+
+function changeQty(delta){
+  state.qty = Math.min(10, Math.max(1, state.qty + delta));
+  document.getElementById('qtyVal').textContent = state.qty;
+  render();
+  refreshQuote();
+}
+
+function toggleZipEditor(){
+  const editor = document.getElementById('zipEditor');
+  editor.classList.toggle('open');
+  if(editor.classList.contains('open')){
+    document.getElementById('zip').focus();
+  }
+}
+
+async function applyZip(){
+  clearError();
+  const zipInput = document.getElementById('zip').value.trim();
+  if(!/^\d{5}$/.test(zipInput)){
+    showError("Please enter a valid 5-digit ZIP code.");
+    return;
+  }
+
+  const applyBtn = document.querySelector('.zip-editor button');
+  applyBtn.disabled = true;
+  applyBtn.textContent = '...';
+
+  try{
+    state.zip = zipInput;
+    document.getElementById('zipLabel').textContent = zipInput;
+    document.getElementById('zipEditor').classList.remove('open');
+    await refreshQuote();
+  }catch(e){
+    showError(e.message || "We couldn't find that ZIP code. Please double-check and try again.");
+  }finally{
+    applyBtn.disabled = false;
+    applyBtn.textContent = 'Apply';
+  }
+}
+
+function renderDeliveryList(){
+  const list = document.getElementById('deliveryList');
+  list.innerHTML = '';
+
+  CONFIG.deliveryMethods.forEach(m=>{
+    const selected = true;
+    const div = document.createElement('div');
+    div.className = 'delivery-opt' + (selected ? ' selected' : '');
+    const delivery = state.quote?.delivery;
+    const priceLabel = state.quoteLoading
+      ? 'Calculating…'
+      : delivery === 0
+        ? 'Free'
+        : Number.isFinite(delivery)
+          ? fmtMoney(delivery)
+          : '—';
+    const quantityNote = state.qty === 2 && state.size === '20'
+      ? ` Two 20' containers may qualify for one delivery charge when our 40' trailer can safely access the site. Final arrangements and charges are subject to review.`
+      : state.qty > 1
+        ? ` Total delivery quote for ${state.qty} containers.`
+        : '';
+
+    div.innerHTML = `
+      <div class="do-top">
+        <div class="radio-dot"></div>
+        <div class="do-title-row">
+          <span class="do-title">${m.title}</span>
+          ${m.badge ? `<span class="do-badge">${m.badge}</span>` : ''}
+        </div>
+        <div class="do-price">${priceLabel}</div>
+      </div>
+      <div class="do-desc">${m.desc}${quantityNote}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+const GRADE_LABELS = { "cw": "Cargo Worthy", "1trip": "1 Trip" };
+
+const CONTAINER_CAPTIONS = {
+  "20-cw": "20' Standard Cargo Worthy",
+  "20-1trip-beige": "20' Standard One Trip, beige",
+  "20-1trip-lightgray": "20' Standard One Trip, light gray",
+  "20-1trip-darkgray": "20' Standard One Trip, dark gray",
+  "40hc-cw": "40' High Cube Cargo Worthy",
+  "40hc-1trip-beige": "40' High Cube One Trip, beige",
+  "40hc-1trip-darkgray": "40' High Cube One Trip, dark gray"
+};
+
+function toggleTaxExempt(checked){
+  state.taxExempt = checked;
+  render();
+  refreshQuote();
+}
+
+function render(){
+  const unitPrice = state.quote?.unitPrice ?? displayUnitPrice();
+  const taxAmount = state.quote?.tax;
+  const cardFee = state.quote?.cardFee;
+  const total = state.quote?.total;
+
+  document.getElementById('basePriceOut').textContent = fmtMoney(unitPrice, 0);
+  document.getElementById('conditionOut').textContent =
+    `${GRADE_LABELS[state.grade]} · Ground Level Delivery`;
+
+  renderDeliveryList();
+
+  document.getElementById('totalOut').textContent = state.quoteLoading ? 'Calculating…' : Number.isFinite(total) ? fmtMoney(total) : '—';
+
+  const taxLine = document.getElementById('taxLine');
+  if(state.taxExempt){
+    taxLine.className = 'tax-line exempt';
+    taxLine.textContent = 'AG / Tax Exempt — no sales tax applied';
+  }else{
+    taxLine.className = 'tax-line';
+    taxLine.innerHTML = `<span>Sales Tax (6.75%)</span><span>${Number.isFinite(taxAmount) ? fmtMoney(taxAmount) : '—'}</span>`;
+  }
+
+  document.getElementById('exemptNote').style.display = state.taxExempt ? '' : 'none';
+
+  const ctaBtn = document.getElementById('ctaBtn');
+  ctaBtn.textContent = state.taxExempt ? 'Authorize Card' : 'Buy Now';
+  ctaBtn.disabled = state.quoteLoading || !state.quote;
+
+  const cardFeeLine = document.getElementById('cardFeeLine');
+  cardFeeLine.innerHTML = `<span>Card Processing Fee (3.5%)</span><span>${Number.isFinite(cardFee) ? fmtMoney(cardFee) : '—'}</span>`;
+
+  // Color choice only matters for 1-Trip units — both sizes now have
+  // a Beige and Dark Gray photo available.
+  const colorWrap = document.getElementById('colorSelectWrap');
+  const showColorPicker = state.grade === '1trip';
+  colorWrap.style.display = showColorPicker ? '' : 'none';
+
+  const darkGrayOption = document.getElementById('darkGrayOption');
+  darkGrayOption.textContent = 'Dark Gray (+$300)';
+
+  // Light Gray is only offered on 20' units — 40' HC Light Gray is
+  // difficult to source in stock, so that option is hidden for 40hc.
+  const lightGrayOption = document.getElementById('lightGrayOption');
+  lightGrayOption.textContent = 'Light Gray (+$300)';
+  lightGrayOption.style.display = (state.size === '40hc') ? 'none' : '';
+  if(state.size === '40hc' && state.color === 'lightgray'){
+    state.color = 'beige';
+    document.getElementById('colorSelect').value = 'beige';
+  }
+
+  const previewKey = (state.grade === '1trip')
+    ? `${state.size}-1trip-${state.color}`
+    : `${state.size}-cw`;
+
+  document.querySelectorAll('.cp-img').forEach(img => {
+    img.classList.toggle('cp-show', img.dataset.key === previewKey);
+  });
+  const captionText = CONTAINER_CAPTIONS[previewKey] || '';
+  document.getElementById('containerPreviewCaption').textContent = captionText;
+
+  const distanceNote = document.getElementById('distanceNote');
+  distanceNote.textContent = state.quote
+    ? `${state.zip} — ${state.quote.routeMiles} route miles from our Hico yard${state.quote.billableMiles > 0 ? ` · ${state.quote.billableMiles} billable miles in this delivery quote` : ' · within the free-delivery radius'}`
+    : '';
+}
+
+document.getElementById('zip').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') applyZip();
+});
+
+async function buyNow(){
+  const btn = document.getElementById('ctaBtn');
+  clearError();
+
+  if(!CONFIG.backendUrl || CONFIG.backendUrl.includes('YOUR-BACKEND-URL')){
+    showError('Checkout isn\'t configured yet — set CONFIG.backendUrl in this file.');
+    return;
+  }
+
+  if(!state.quote){
+    showError('Please wait for the delivered-price calculation before checking out.');
+    return;
+  }
+
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.textContent = 'Loading checkout...';
+
+  try{
+    const res = await fetch(CONFIG.backendUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(checkoutPayload())
+    });
+
+    const data = await res.json();
+
+    if(!res.ok || !data.checkoutUrl) throw new Error(data.error || 'Could not start checkout');
+    const checkoutUrl = new URL(data.checkoutUrl);
+    if(checkoutUrl.protocol !== 'https:' || checkoutUrl.hostname !== 'checkout.stripe.com') throw new Error('Invalid checkout URL');
+    window.location.assign(checkoutUrl.href);
+
+  }catch(e){
+    showError('We couldn\'t start checkout. Please try again or call ' + CONFIG.contactPhone + '.');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+function computeDeliveryDate(){
+  // Adds 2 business days to today, skipping Saturdays and Sundays.
+  let date = new Date();
+  let daysToAdd = 2;
+  while(daysToAdd > 0){
+    date.setDate(date.getDate() + 1);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+    if(dayOfWeek !== 0 && dayOfWeek !== 6){
+      daysToAdd--;
+    }
+  }
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+document.getElementById('deliveryDateOut').textContent = computeDeliveryDate();
+
+// ---- Carousel logic (used for combos with multiple example photos) ----
+function initCarousels(){
+  document.querySelectorAll('.cp-carousel').forEach(carousel => {
+    const track = carousel.querySelector('.cp-track');
+    const slides = carousel.querySelectorAll('.cp-slide');
+    const dotsWrap = carousel.parentElement.querySelector('.cp-dots');
+    if(!dotsWrap || dotsWrap.childElementCount > 0) return; // already built
+
+    carousel.dataset.index = 0;
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'cp-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goToSlide(carousel, i);
+      dotsWrap.appendChild(dot);
+    });
+
+    // Touch swipe support
+    let startX = null;
+    track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+    track.addEventListener('touchend', e => {
+      if(startX === null) return;
+      const deltaX = e.changedTouches[0].clientX - startX;
+      if(Math.abs(deltaX) > 40){
+        carouselStep(carousel.querySelector('.cp-next'), deltaX < 0 ? 1 : -1);
+      }
+      startX = null;
+    }, {passive:true});
+  });
+}
+
+function goToSlide(carousel, index){
+  const track = carousel.querySelector('.cp-track');
+  const slides = carousel.querySelectorAll('.cp-slide');
+  const dots = carousel.parentElement.querySelectorAll('.cp-dot');
+  const total = slides.length;
+  const newIndex = (index + total) % total;
+  carousel.dataset.index = newIndex;
+  track.style.transform = `translateX(-${newIndex * 100}%)`;
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === newIndex));
+}
+
+function carouselStep(navBtn, direction){
+  const carousel = navBtn.closest('.cp-carousel');
+  const current = parseInt(carousel.dataset.index || '0', 10);
+  goToSlide(carousel, current + direction);
+}
+
+function applyProductSelectionFromUrl(){
+  const params = new URLSearchParams(window.location.search);
+  const requestedSize = params.get('size');
+  const requestedGrade = params.get('grade');
+  const requestedColor = params.get('color');
+
+  if(['20', '40hc'].includes(requestedSize)) state.size = requestedSize;
+  if(['cw', '1trip'].includes(requestedGrade)) state.grade = requestedGrade;
+
+  const allowedColors = state.size === '20'
+    ? ['beige', 'lightgray', 'darkgray']
+    : ['beige', 'darkgray'];
+  state.color = state.grade === '1trip' && allowedColors.includes(requestedColor)
+    ? requestedColor
+    : 'beige';
+
+  document.getElementById('sizeSelect').value = state.size;
+  document.getElementById('gradeSelect').value = state.grade;
+  document.getElementById('colorSelect').value = state.color;
+}
+
+applyProductSelectionFromUrl();
+initCarousels();
+
+render();
+refreshQuote();
+</script>
+
+  <script src="assets/google-analytics.js"></script>
+</body>
+</html>
