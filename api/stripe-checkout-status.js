@@ -1,6 +1,6 @@
 import { stripeClient, paymentState, isOurSession } from '../lib/stripe-checkout.js';
 
-export function makeHandler(getStripe = stripeClient) {
+export function makeHandler(getStripe = () => stripeClient({ requireCheckoutEnabled: false })) {
   return async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed.' });

@@ -3,7 +3,7 @@ import { stripeClient } from '../lib/stripe-checkout.js';
 export const config = { api: { bodyParser: false } };
 const relevant = new Set(['payment_intent.succeeded', 'payment_intent.amount_capturable_updated', 'payment_intent.payment_failed', 'payment_intent.canceled']);
 
-export function makeHandler(getStripe = stripeClient) {
+export function makeHandler(getStripe = () => stripeClient({ requireCheckoutEnabled: false })) {
   return async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') return res.status(405).end();
