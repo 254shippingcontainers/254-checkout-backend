@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><meta name="referrer" content="no-referrer"><title>Checkout status | 254 Shipping Containers</title>
 <style>body{margin:0;background:#f5f7fa;color:#172943;font:18px/1.6 system-ui}header{background:#172943;color:white;padding:20px}a{color:inherit}main{max-width:650px;margin:60px auto;padding:30px;background:white;border-radius:16px}h1{line-height:1.2}button,.button{display:inline-block;background:#234b7e;color:white;padding:12px 20px;border:0;border-radius:8px;text-decoration:none}small{display:block;color:#637386}</style></head>
-<body><header>254 Shipping Containers · <a href="tel:+12545956950">Call Mason: (254) 595-6950</a></header><main><small id="mode"></small><h1 id="heading">Checking your payment…</h1><p id="message" role="status">Please wait while we verify checkout with Stripe.</p><p id="reference"></p><button id="retry" hidden>Check again</button> <a class="button" href="sms:+12545956950">Text Mason</a><p><a href="stripe-test.html">Return to calculator</a></p></main>
+<body><header>254 Shipping Containers · <a href="tel:+12545956950">Call Mason: (254) 595-6950</a></header><main><small id="mode"></small><h1 id="heading">Checking your payment…</h1><p id="message" role="status">Please wait while we verify checkout with Stripe.</p><p id="reference"></p><button id="retry" hidden>Check again</button> <a class="button" href="sms:+12545956950">Text Mason</a><p><a id="calculator" href="https://www.254shippingcontainers.com/calculator.html">Return to calculator</a></p></main>
 <script>
 const id=new URLSearchParams(location.search).get('session_id');
 const heading=document.getElementById('heading'),message=document.getElementById('message'),retry=document.getElementById('retry');
@@ -11,6 +11,7 @@ async function check(){
     if(!id) throw new Error('Missing checkout reference');
     const response=await fetch('/api/stripe-checkout-status?session_id='+encodeURIComponent(id),{cache:'no-store'});
     const data=await response.json(); if(!response.ok)throw new Error(data.error);
+    document.getElementById('calculator').href=data.testMode?'stripe-test.html':'https://www.254shippingcontainers.com/calculator.html';
     document.getElementById('mode').textContent=data.testMode?'SANDBOX TEST — no real payment':'';
     document.getElementById('reference').textContent='Order reference: '+data.orderReference;
     if(data.status==='paid'){heading.textContent='Payment confirmed';message.textContent='Thank you. Mason will contact you to review your order and confirm delivery arrangements.';}
