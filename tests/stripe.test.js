@@ -75,3 +75,23 @@ test('webhook rejects unsigned data and handles duplicate/out-of-order events by
   assert.equal(updates,1);assert.equal(metadata.order_payment_state,'paid');assert.equal(metadata.authentication_result,'authenticated');
   delete process.env.STRIPE_WEBHOOK_SECRET;
 });
+
+
+test('production gates new checkout but can reconcile existing payments; live credentials required', () => {
+  const names=['STRIPE_SECRET_KEY','STRIPE_CHECKOUT_ENABLED','VERCEL_ENV'];
+  const previous=Object.fromEntries(names.map(name=>[name,process.env[name]]));
+  try {
+    process.env.VERCEL_ENV='production';process.env.STRIPE_SECRET_KEY='rk_live_fake';
+    delete process.env.STRIPE_CHECKOUT_ENABLED;
+    assert.throws(()=>stripeClient(),/not enabled/);
+    assert.ok(stripeClient({requireCheckoutEnabled:false}));
+    process.env.STRIPE_CHECKOUT_ENABLED='true';
+    assert.ok(stripeClient());
+    process.env.STRIPE_SECRET_KEY='sk_test_fake';
+    assert.throws(()=>stripeClient({requireCheckoutEnabled:false}),/live key/);
+    const quote=calculateQuote(normalizeSelection(selection),0);
+    const params=sessionParameters(quote,'254-test','https://254-checkout-backend.vercel.app');
+    assert.equal(params.success_url,'https://254-checkout-backend.vercel.app/stripe-result.html?session_id={CHECKOUT_SESSION_ID}');
+    assert.equal(params.cancel_url,'https://www.254shippingcontainers.com/calculator.html?checkout=cancelled');
+  } finally {for(const name of names){if(previous[name]===undefined)delete process.env[name];else process.env[name]=previous[name];}}
+});
