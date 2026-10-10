@@ -579,15 +579,16 @@
       <label>Container Size</label>
       <select id="sizeSelect" class="grade-dropdown" onchange="selectSize(this.value)">
         <option value="20">20' Standard</option>
+        <option value="20os">20' Open Side (2 Door Sets)</option>
         <option value="40hc" selected>40' High Cube</option>
       </select>
     </div>
 
-    <div class="size-select">
+    <div class="size-select" id="gradeSelectWrap">
       <label>Grade</label>
       <select id="gradeSelect" class="grade-dropdown" onchange="selectGrade(this.value)">
         <option value="1trip">1 Trip</option>
-        <option value="cw" selected>Cargo Worthy</option>
+        <option value="cw" id="cargoWorthyOption" selected>Cargo Worthy</option>
       </select>
     </div>
 
@@ -633,6 +634,24 @@
         </div>
         <div class="cp-dots"></div>
         <div class="cp-example-note">Photos show example units — actual unit may vary slightly</div>
+      </div>
+      <div class="cp-img" data-key="20os-1trip-beige">
+        <div class="cp-carousel">
+          <div class="cp-track">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-1.jpg" alt="20-foot standard open-side one-trip container in beige with both side door sets closed">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-2.jpg" alt="20-foot standard open-side one-trip container with both side door sets open">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-3.jpg" alt="Interior view through the open side doors of a 20-foot open-side container">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-4.jpg" alt="Interior of a 20-foot open-side container with end and side doors open">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-5.jpg" alt="Cargo-door end of a beige 20-foot open-side container">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-6.jpg" alt="Three-quarter view of a beige 20-foot open-side container">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-7.jpg" alt="Side and end view of a beige 20-foot open-side container">
+            <img class="cp-slide" src="https://254-checkout-backend.vercel.app/images/container-20-open-side-beige-8.jpg" alt="Closed end view of a beige 20-foot open-side container">
+          </div>
+          <button type="button" class="cp-nav cp-prev" onclick="carouselStep(this, -1)">‹</button>
+          <button type="button" class="cp-nav cp-next" onclick="carouselStep(this, 1)">›</button>
+        </div>
+        <div class="cp-dots"></div>
+        <div class="cp-example-note">Actual in-stock One-Trip unit · Beige RAL 1015 · two side door sets plus standard end doors</div>
       </div>
       <div class="cp-img" data-key="20-1trip-lightgray">
         <div class="cp-carousel">
@@ -776,6 +795,7 @@ const CONFIG = {
   // recalculates every amount before creating a Stripe checkout.
   containerBasePrice: {
     "20":   { cw: 2200, "1trip": 3000 },
+    "20os": { "1trip": 5200 },
     "40hc": { cw: 2550, "1trip": 4250 }
   },
 
@@ -840,7 +860,7 @@ function fmtMoney(n, digits = 2){
 }
 
 function getQuoteUrl(){
-  return location.origin + '/api/quote';
+  return CONFIG.backendUrl.replace(/\/api\/create-(?:checkout-v2|stripe-checkout)\/?$/, '/api/quote');
 }
 
 function checkoutPayload(){
@@ -902,6 +922,10 @@ function clearError(){
 
 function selectSize(sizeKey){
   state.size = sizeKey;
+  if(sizeKey === '20os'){
+    state.grade = '1trip';
+    document.getElementById('gradeSelect').value = '1trip';
+  }
   state.color = "beige";
   document.getElementById('colorSelect').value = "beige";
   render();
@@ -909,7 +933,8 @@ function selectSize(sizeKey){
 }
 
 function selectGrade(gradeKey){
-  state.grade = gradeKey;
+  state.grade = state.size === '20os' ? '1trip' : gradeKey;
+  document.getElementById('gradeSelect').value = state.grade;
   state.color = "beige";
   document.getElementById('colorSelect').value = "beige";
   render();
@@ -978,7 +1003,7 @@ function renderDeliveryList(){
         : Number.isFinite(delivery)
           ? fmtMoney(delivery)
           : '—';
-    const quantityNote = state.qty === 2 && state.size === '20'
+    const quantityNote = state.qty === 2 && (state.size === '20' || state.size === '20os')
       ? ` Two 20' containers may qualify for one delivery charge when our 40' trailer can safely access the site. Final arrangements and charges are subject to review.`
       : state.qty > 1
         ? ` Total delivery quote for ${state.qty} containers.`
@@ -1004,6 +1029,7 @@ const GRADE_LABELS = { "cw": "Cargo Worthy", "1trip": "1 Trip" };
 const CONTAINER_CAPTIONS = {
   "20-cw": "20' Standard Cargo Worthy",
   "20-1trip-beige": "20' Standard One Trip, beige",
+  "20os-1trip-beige": "20' Standard Open Side (2 Door Sets), One Trip, Beige RAL 1015",
   "20-1trip-lightgray": "20' Standard One Trip, light gray",
   "20-1trip-darkgray": "20' Standard One Trip, dark gray",
   "40hc-cw": "40' High Cube Cargo Worthy",
@@ -1025,7 +1051,9 @@ function render(){
 
   document.getElementById('basePriceOut').textContent = fmtMoney(unitPrice, 0);
   document.getElementById('conditionOut').textContent =
-    `${GRADE_LABELS[state.grade]} · Ground Level Delivery`;
+    state.size === '20os'
+      ? `One Trip · 2 Side Door Sets · Ground Level Delivery`
+      : `${GRADE_LABELS[state.grade]} · Ground Level Delivery`;
 
   renderDeliveryList();
 
@@ -1052,8 +1080,15 @@ function render(){
   // Color choice only matters for 1-Trip units — both sizes now have
   // a Beige and Dark Gray photo available.
   const colorWrap = document.getElementById('colorSelectWrap');
-  const showColorPicker = state.grade === '1trip';
+  const showColorPicker = state.grade === '1trip' && state.size !== '20os';
   colorWrap.style.display = showColorPicker ? '' : 'none';
+
+  const cargoWorthyOption = document.getElementById('cargoWorthyOption');
+  cargoWorthyOption.style.display = state.size === '20os' ? 'none' : '';
+  if(state.size === '20os' && state.grade !== '1trip'){
+    state.grade = '1trip';
+    document.getElementById('gradeSelect').value = '1trip';
+  }
 
   const darkGrayOption = document.getElementById('darkGrayOption');
   darkGrayOption.textContent = 'Dark Gray (+$300)';
@@ -1062,8 +1097,8 @@ function render(){
   // difficult to source in stock, so that option is hidden for 40hc.
   const lightGrayOption = document.getElementById('lightGrayOption');
   lightGrayOption.textContent = 'Light Gray (+$300)';
-  lightGrayOption.style.display = (state.size === '40hc') ? 'none' : '';
-  if(state.size === '40hc' && state.color === 'lightgray'){
+  lightGrayOption.style.display = (state.size === '40hc' || state.size === '20os') ? 'none' : '';
+  if((state.size === '40hc' || state.size === '20os') && state.color === 'lightgray'){
     state.color = 'beige';
     document.getElementById('colorSelect').value = 'beige';
   }
@@ -1200,12 +1235,16 @@ function applyProductSelectionFromUrl(){
   const requestedGrade = params.get('grade');
   const requestedColor = params.get('color');
 
-  if(['20', '40hc'].includes(requestedSize)) state.size = requestedSize;
+  if(['20', '20os', '40hc'].includes(requestedSize)) state.size = requestedSize;
   if(['cw', '1trip'].includes(requestedGrade)) state.grade = requestedGrade;
+
+  if(state.size === '20os') state.grade = '1trip';
 
   const allowedColors = state.size === '20'
     ? ['beige', 'lightgray', 'darkgray']
-    : ['beige', 'darkgray'];
+    : state.size === '20os'
+      ? ['beige']
+      : ['beige', 'darkgray'];
   state.color = state.grade === '1trip' && allowedColors.includes(requestedColor)
     ? requestedColor
     : 'beige';

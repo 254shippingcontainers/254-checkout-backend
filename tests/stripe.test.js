@@ -11,7 +11,14 @@ const selection = { size: '20', grade: 'cw', color: 'beige', qty: 1, zip: '76457
 function response() { return { headers: {}, statusCode: 200, setHeader(k,v){this.headers[k]=v;},status(n){this.statusCode=n;return this;},json(body){this.body=body;return this;},end(){return this;} }; }
 
 test('all product and delivery line items sum exactly to server total; 3DS challenge requested', () => {
-  for(const size of ['20','40hc']) for(const grade of ['cw','1trip']) for(const taxExempt of [false,true]) for(const qty of [1,3]) {
+  const products = [
+    { size: '20', grade: 'cw' },
+    { size: '20', grade: '1trip' },
+    { size: '20os', grade: '1trip' },
+    { size: '40hc', grade: 'cw' },
+    { size: '40hc', grade: '1trip' }
+  ];
+  for(const {size,grade} of products) for(const taxExempt of [false,true]) for(const qty of [1,3]) {
     const quote=calculateQuote(normalizeSelection({...selection,size,grade,taxExempt,qty}),85);
     const params=sessionParameters(quote,'254-test','https://preview.example.com');
     assert.equal(params.line_items.reduce((sum,l)=>sum+l.price_data.unit_amount*l.quantity,0),quote.totalCents);
@@ -19,6 +26,21 @@ test('all product and delivery line items sum exactly to server total; 3DS chall
     assert.equal(params.payment_intent_data.capture_method,taxExempt?'manual':'automatic');
     assert.equal(params.metadata.delivery_zip,'76457');
   }
+});
+
+test('20-foot open-side pricing is $5,200 and limited to one-trip beige', () => {
+  const openSide = normalizeSelection({...selection,size:'20os',grade:'1trip',color:'beige'});
+  assert.equal(calculateQuote(openSide,0).unitPriceCents,520000);
+  assert.throws(
+    () => normalizeSelection({...selection,size:'20os',grade:'cw',color:'beige'}),
+    /valid container size and grade/
+  );
+  assert.throws(
+    () => normalizeSelection({...selection,size:'20os',grade:'1trip',color:'darkgray'}),
+    /offered in beige only/
+  );
+  const params = sessionParameters(calculateQuote(openSide,0),'254-open-side','https://preview.example.com');
+  assert.match(params.line_items[0].price_data.product_data.name,/Open Side \(2 Door Sets\)/);
 });
 
 test('checkout ignores browser amounts and metadata', async () => {

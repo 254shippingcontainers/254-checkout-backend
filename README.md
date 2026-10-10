@@ -6,10 +6,11 @@ not prices, so a customer cannot alter the checkout amount with browser tools.
 
 ## Confirmed business rules
 
-- 20-foot cargo worthy: $1,900
-- 20-foot one trip: $2,850
+- 20-foot cargo worthy: $2,200
+- 20-foot one trip: $3,000
+- 20-foot standard open side, two door sets, one trip beige: $5,200
 - 40-foot high cube cargo worthy: $2,550
-- 40-foot high cube one trip: $4,150
+- 40-foot high cube one trip: $4,250
 - Light gray or dark gray one-trip color: +$300 per container
 - First 30 route miles: free
 - Beyond 30 route miles: $4.50 per one-way mile, per container
