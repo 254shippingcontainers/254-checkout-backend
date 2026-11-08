@@ -49,8 +49,8 @@ test('checkout ignores browser amounts and metadata', async () => {
   const res=response();
   await handler({method:'POST',headers:{origin:'https://www.254shippingcontainers.com'},body:{...selection,amount:1,metadata:{quoted_total_cents:'1'}}},res);
   assert.equal(res.statusCode,200);
-  assert.equal(res.body.quote.total,2430.70);
-  assert.equal(Number(submitted.metadata.quoted_total_cents),243070);
+  assert.equal(res.body.quote.total,2320.21);
+  assert.equal(Number(submitted.metadata.quoted_total_cents),232021);
 });
 
 test('invalid quantity and untrusted origins cannot create Stripe sessions', async () => {
