@@ -877,7 +877,7 @@ function checkoutPayload(){
 function displayUnitPrice(){
   let price = CONFIG.containerBasePrice[state.size][state.grade];
   if(state.grade === '1trip' && (state.color === 'darkgray' || state.color === 'lightgray')){
-    price += 300;
+    price += 200;
   }
   return price;
 }
@@ -1091,12 +1091,12 @@ function render(){
   }
 
   const darkGrayOption = document.getElementById('darkGrayOption');
-  darkGrayOption.textContent = 'Dark Gray (+$300)';
+  darkGrayOption.textContent = 'Dark Gray (+$200)';
 
   // Light Gray is only offered on 20' units — 40' HC Light Gray is
   // difficult to source in stock, so that option is hidden for 40hc.
   const lightGrayOption = document.getElementById('lightGrayOption');
-  lightGrayOption.textContent = 'Light Gray (+$300)';
+  lightGrayOption.textContent = 'Light Gray (+$200)';
   lightGrayOption.style.display = (state.size === '40hc' || state.size === '20os') ? 'none' : '';
   if((state.size === '40hc' || state.size === '20os') && state.color === 'lightgray'){
     state.color = 'beige';
