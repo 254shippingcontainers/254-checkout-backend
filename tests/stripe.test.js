@@ -16,7 +16,8 @@ test('all product and delivery line items sum exactly to server total; 3DS chall
     { size: '20', grade: '1trip' },
     { size: '20os', grade: '1trip' },
     { size: '40hc', grade: 'cw' },
-    { size: '40hc', grade: '1trip' }
+    { size: '40hc', grade: '1trip' },
+    { size: '40hcdd', grade: '1trip' }
   ];
   for(const {size,grade} of products) for(const taxExempt of [false,true]) for(const qty of [1,3]) {
     const quote=calculateQuote(normalizeSelection({...selection,size,grade,taxExempt,qty}),85);
@@ -41,6 +42,21 @@ test('20-foot open-side pricing is $5,200 and limited to one-trip beige', () => 
   );
   const params = sessionParameters(calculateQuote(openSide,0),'254-open-side','https://preview.example.com');
   assert.match(params.line_items[0].price_data.product_data.name,/Open Side \(2 Door Sets\)/);
+});
+
+test('40-foot high-cube double-door pricing is $4,800 and limited to one-trip beige', () => {
+  const doubleDoor = normalizeSelection({...selection,size:'40hcdd',grade:'1trip',color:'beige'});
+  assert.equal(calculateQuote(doubleDoor,0).unitPriceCents,480000);
+  assert.throws(
+    () => normalizeSelection({...selection,size:'40hcdd',grade:'cw',color:'beige'}),
+    /valid container size and grade/
+  );
+  assert.throws(
+    () => normalizeSelection({...selection,size:'40hcdd',grade:'1trip',color:'darkgray'}),
+    /offered in beige only/
+  );
+  const params = sessionParameters(calculateQuote(doubleDoor,0),'254-double-door','https://preview.example.com');
+  assert.match(params.line_items[0].price_data.product_data.name,/High Cube Double-Door One Trip/);
 });
 
 test('checkout ignores browser amounts and metadata', async () => {
