@@ -29,6 +29,13 @@ test('all product and delivery line items sum exactly to server total; 3DS chall
   }
 });
 
+test('premium one-trip gray colors add $200 per container', () => {
+  const twentyGray = normalizeSelection({...selection,size:'20',grade:'1trip',color:'lightgray'});
+  const fortyGray = normalizeSelection({...selection,size:'40hc',grade:'1trip',color:'darkgray'});
+  assert.equal(calculateQuote(twentyGray,0).unitPriceCents,330000);
+  assert.equal(calculateQuote(fortyGray,0).unitPriceCents,435000);
+});
+
 test('20-foot open-side pricing is $5,200 and limited to one-trip beige', () => {
   const openSide = normalizeSelection({...selection,size:'20os',grade:'1trip',color:'beige'});
   assert.equal(calculateQuote(openSide,0).unitPriceCents,520000);
