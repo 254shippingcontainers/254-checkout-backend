@@ -11,7 +11,7 @@ not prices, so a customer cannot alter the checkout amount with browser tools.
 - 20-foot standard open side, two door sets, one trip beige: $5,200
 - 40-foot high cube cargo worthy: $2,550
 - 40-foot high cube one trip: $4,250
-- Light gray or dark gray one-trip color: +$300 per container
+- Light gray or dark gray one-trip color: +$200 per container
 - First 30 route miles: free
 - Beyond 30 route miles: $4.50 per one-way mile, per container
 - Maximum automatic checkout distance: 400 route miles
