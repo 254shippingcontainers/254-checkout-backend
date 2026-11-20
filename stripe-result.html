@@ -14,16 +14,7 @@ function trackCheckoutResult(name,data){
     transaction_id:data.orderReference,
     currency:'USD',
     value:data.total,
-    tax_exempt:data.taxExempt,
-    delivery_zip:data.deliveryZip,
-    route_miles:data.routeMiles,
-    items:[{
-      item_id:`${data.size}-${data.grade}-${data.color}`,
-      item_name:`${data.size} ${data.grade} ${data.color}`,
-      item_category:data.size,
-      item_variant:`${data.grade}-${data.color}`,
-      quantity:data.quantity
-    }]
+    tax_exempt:data.taxExempt
   });
 }
 async function check(){
