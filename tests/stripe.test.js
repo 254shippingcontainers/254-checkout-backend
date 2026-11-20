@@ -136,7 +136,7 @@ test('production gates new checkout but can reconcile existing payments; live cr
     assert.throws(()=>stripeClient({requireCheckoutEnabled:false}),/live key/);
     const quote=calculateQuote(normalizeSelection(selection),0);
     const params=sessionParameters(quote,'254-test','https://254-checkout-backend.vercel.app');
-    assert.equal(params.success_url,'https://254-checkout-backend.vercel.app/stripe-result.html?session_id={CHECKOUT_SESSION_ID}');
+    assert.equal(params.success_url,'https://www.254shippingcontainers.com/checkout-result.html?session_id={CHECKOUT_SESSION_ID}');
     assert.equal(params.cancel_url,'https://www.254shippingcontainers.com/calculator.html?checkout=cancelled');
   } finally {for(const name of names){if(previous[name]===undefined)delete process.env[name];else process.env[name]=previous[name];}}
 });
