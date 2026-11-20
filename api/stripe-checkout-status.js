@@ -3,6 +3,11 @@ import { stripeClient, paymentState, isOurSession } from '../lib/stripe-checkout
 export function makeHandler(getStripe = () => stripeClient({ requireCheckoutEnabled: false })) {
   return async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
+    const allowedOrigin = req.headers?.origin === 'https://www.254shippingcontainers.com' ||
+      req.headers?.origin === 'https://254shippingcontainers.com';
+    if (allowedOrigin) res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    res.setHeader('Vary', 'Origin');
+    if (req.method === 'OPTIONS') return res.status(allowedOrigin ? 204 : 403).end();
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed.' });
     const id = req.query?.session_id;
     if (typeof id !== 'string' || !/^cs_(test_|live_)?[a-zA-Z0-9]+$/.test(id)) return res.status(400).json({ error: 'Invalid checkout reference.' });
