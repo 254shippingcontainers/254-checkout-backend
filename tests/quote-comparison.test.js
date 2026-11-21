@@ -47,12 +47,41 @@ test('quote comparison accepts a full address and returns taxable and exempt tot
   }
 });
 
-test('quote comparison rejects incomplete destinations', async () => {
+test('quote comparison accepts a city and selected state', async () => {
+  const previousKey = process.env.GOOGLE_MAPS_API_KEY;
+  process.env.GOOGLE_MAPS_API_KEY = 'test-key';
+  const handler = makeHandler(async () => ({
+    ok: true,
+    json: async () => ({ routes: [{ distanceMeters: 16093.44 }] })
+  }));
+  const res = response();
+  await handler({
+    method: 'POST', headers: {},
+    body: { size: '20', grade: 'cw', color: 'beige', qty: 1, destination: 'Durant', state: 'OK' }
+  }, res);
+  if (previousKey === undefined) delete process.env.GOOGLE_MAPS_API_KEY;
+  else process.env.GOOGLE_MAPS_API_KEY = previousKey;
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.destination, 'Durant, OK');
+});
+
+test('quote comparison rejects an unsupported state', async () => {
   const handler = makeHandler(async () => { throw new Error('route lookup should not run'); });
   const res = response();
   await handler({
     method: 'POST', headers: {},
-    body: { size: '20', grade: 'cw', color: 'beige', qty: 1, destination: 'Hico' }
+    body: { size: '20', grade: 'cw', color: 'beige', qty: 1, destination: 'Tulsa', state: 'KS' }
+  }, res);
+  assert.equal(res.statusCode, 400);
+  assert.equal(res.body.code, 'INVALID_STATE');
+});
+
+test('quote comparison rejects an invalid destination', async () => {
+  const handler = makeHandler(async () => { throw new Error('route lookup should not run'); });
+  const res = response();
+  await handler({
+    method: 'POST', headers: {},
+    body: { size: '20', grade: 'cw', color: 'beige', qty: 1, destination: '<Hico>' }
   }, res);
   assert.equal(res.statusCode, 400);
   assert.equal(res.body.code, 'INVALID_DESTINATION');
