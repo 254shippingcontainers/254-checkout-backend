@@ -2,9 +2,20 @@ import { calculateQuote, getRouteMiles, normalizeSelection, publicQuote, sendQuo
 
 function normalizeDestination(input = {}) {
   const destination = String(input.destination || input.zip || '').trim();
+  const states = { TX: 'TX', TEXAS: 'TX', OK: 'OK', OKLAHOMA: 'OK', LA: 'LA', LOUISIANA: 'LA', NM: 'NM', 'NEW MEXICO': 'NM' };
+  const state = states[String(input.state || 'TX').trim().toUpperCase()];
+  if (!state) {
+    throw new QuoteError('INVALID_STATE', 'Choose Texas, Oklahoma, Louisiana, or New Mexico.');
+  }
   if (/^\d{5}$/.test(destination)) return destination;
+  if (/^[A-Za-z][A-Za-z .'-]{1,60}$/.test(destination)) {
+    return `${destination}, ${state}`;
+  }
+  if (/^[A-Za-z][A-Za-z .'-]{1,60},\s*(?:TX|Texas|OK|Oklahoma|LA|Louisiana|NM|New Mexico)$/i.test(destination)) {
+    return destination;
+  }
   if (destination.length < 8 || destination.length > 180 || !/[A-Za-z]/.test(destination) || !/\d/.test(destination)) {
-    throw new QuoteError('INVALID_DESTINATION', 'Enter a valid 5-digit ZIP code or full delivery address.');
+    throw new QuoteError('INVALID_DESTINATION', 'Enter a city, 5-digit ZIP code, or full delivery address.');
   }
   if (/[<>\r\n]/.test(destination)) {
     throw new QuoteError('INVALID_DESTINATION', 'Enter a valid delivery address.');
