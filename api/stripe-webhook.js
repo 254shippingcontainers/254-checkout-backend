@@ -1,7 +1,7 @@
 import { stripeClient } from '../lib/stripe-checkout.js';
 
 export const config = { api: { bodyParser: false } };
-const relevant = new Set(['payment_intent.succeeded', 'payment_intent.amount_capturable_updated', 'payment_intent.payment_failed', 'payment_intent.canceled']);
+const relevant = new Set(['payment_intent.succeeded', 'payment_intent.amount_capturable_updated', 'payment_intent.payment_failed', 'payment_intent.canceled', 'payment_intent.processing']);
 
 export function makeHandler(getStripe = () => stripeClient({ requireCheckoutEnabled: false })) {
   return async (req, res) => {
