@@ -11,6 +11,9 @@ export function makeHandler(getStripe = stripeClient) {
     try {
       const stripe = getStripe();
       const quote = await buildQuote(req.body || {});
+      if (quote.selection.paymentMethod === 'cash_check') {
+        return res.status(400).json({ error: 'Cash or check orders must be submitted with the delivery contact form.', code: 'OFFLINE_ORDER_REQUIRED' });
+      }
       const orderReference = `254-${randomUUID().toUpperCase()}`;
       const session = await stripe.checkout.sessions.create(
         sessionParameters(quote, orderReference, checkoutOrigin()),
